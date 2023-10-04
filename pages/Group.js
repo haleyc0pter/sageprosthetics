@@ -166,7 +166,10 @@ class Group extends Component {
 
     addPerson = () => {
         if (this.state.student) this.updateFirebase(`group/${this.state.name}`, this.state.image);
-        else {
+        else if (this.state.webdev){
+			this.updateFirebase(`webdev/${this.state.name}`, this.state.image);
+		}
+		else {
             this.updateFirebase(`faculty/${this.state.name}`, {
                 image: this.state.image,
                 bio: this.state.bio,
@@ -228,6 +231,51 @@ class Group extends Component {
             });
 
             return teachers.reverse();
+        } catch {
+            return <h4> Loading ... </h4>;
+        }
+    };
+	
+	renderWebdev = () => {
+        if (!this.props.webdev) {
+            return <h4> Loading ... </h4>;
+        }
+
+        try {
+            const webdev = this.props.webdev.map((dev) => {
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <Person
+                            key={dev.name}
+                            src={dev.src}
+                            name={dev.name}
+                            faculty
+                            onClick={() => this.setState({ profile: dev })}
+                        />
+                        {this.props.isAuthenticated ? (
+                            <>
+                                <Button
+                                    label="Delete"
+                                    onClick={() => this.setState({ showModal: dev.name })}
+                                    icon={<CloseIcon />}
+                                    style={{ margin: '0px 0px 0px 0px' }}
+                                    plain={true}
+                                />
+                                <ConfirmModal
+                                    onToggleModal={() => this.setState({ showModal: '' })}
+                                    show={this.state.showModal === dev.name}
+                                    onConfirm={() =>
+                                        this.updateFirebase(`faculty/${dev.name}`, null)
+                                    }
+                                    message={`You are about to delete ${dev.name}. Are you sure?`}
+                                />
+                            </>
+                        ) : null}
+                    </div>
+                );
+            });
+
+            return dev.reverse();
         } catch {
             return <h4> Loading ... </h4>;
         }
@@ -392,15 +440,15 @@ class Group extends Component {
                                 onChange={() => this.setState({ student: true })}
                             />
                             <RadioButton
-                                id="choice1-1"
-                                name="choice1-1"
-                                label="Webdev"
-                                checked={this.state.student}
-                                onChange={() => this.setState({ student: false })}
-                            />
-                            <RadioButton
                                 id="choice1-2"
                                 name="choice1-2"
+                                label="Webdev"
+                                checked={this.state.student}
+                                onChange={() => this.setState({ webdev: true })}
+                            />
+                            <RadioButton
+                                id="choice1-3"
+                                name="choice1-3"
                                 label="Faculty Advisor"
                                 checked={!this.state.student}
                                 onChange={() => this.setState({ student: false })}
